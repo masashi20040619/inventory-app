@@ -190,16 +190,8 @@
   </div>
 
   <script>
-    // ===== Storage =====
     const STORAGE_KEY = "crane-game-prizes";
-
-    /** @type {Array<{
-     *  id:string,name:string,quantity:number,acquisitionDate:string,
-     *  category:string,manufacturer?:string,photo?:string,notes?:string
-     * }>} */
     let prizes = [];
-
-    // ===== UI refs =====
     const $ = (id) => document.getElementById(id);
 
     const searchInput = $("searchInput");
@@ -233,8 +225,8 @@
     const clearPhotoBtn = $("clearPhotoBtn");
     const notesInput = $("notesInput");
 
-    let displayMode = "card"; // 'card' | 'list'
-    let currentPhotoData = ""; // base64
+    let displayMode = "card";
+    let currentPhotoData = "";
 
     function todayISO() {
       const d = new Date();
@@ -250,7 +242,6 @@
         if (!raw) return [];
         const parsed = JSON.parse(raw);
         if (!Array.isArray(parsed)) return [];
-        // migrate minimal
         return parsed.map(p => ({
           id: String(p.id ?? (new Date().toISOString() + Math.random())),
           name: String(p.name ?? ""),
@@ -268,14 +259,10 @@
     }
 
     function safeSave() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(prizes));
-      } catch (e) {
-        console.error("save failed", e);
-      }
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prizes)); }
+      catch (e) { console.error("save failed", e); }
     }
 
-    // ===== Modal =====
     function openModal(prize) {
       formError.classList.add("hidden");
       formError.textContent = "";
@@ -305,7 +292,6 @@
         currentPhotoData = "";
       }
 
-      // preview
       if (currentPhotoData) {
         photoPreview.src = currentPhotoData;
         photoPreview.classList.remove("hidden");
@@ -316,7 +302,6 @@
         clearPhotoBtn.classList.add("hidden");
       }
 
-      // file input reset
       photoInput.value = "";
     }
 
@@ -330,18 +315,15 @@
       formError.classList.remove("hidden");
     }
 
-    // close on backdrop click
     modalBackdrop.addEventListener("mousedown", (e) => {
       if (e.target === modalBackdrop) closeModal();
     });
     closeModalBtn.addEventListener("click", closeModal);
     cancelBtn.addEventListener("click", closeModal);
 
-    // ===== Photo handling =====
     photoInput.addEventListener("change", () => {
       const file = photoInput.files && photoInput.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = () => {
         currentPhotoData = String(reader.result || "");
@@ -362,7 +344,6 @@
       photoInput.value = "";
     });
 
-    // ===== Filtering/Sorting =====
     function getFilteredSorted() {
       const term = (searchInput.value || "").toLowerCase();
       const cat = categorySelect.value;
@@ -378,25 +359,21 @@
         arr.sort((a,b) => (a.name||"").localeCompare((b.name||""), "ja"));
       } else if (order === "name-desc") {
         arr.sort((a,b) => (b.name||"").localeCompare((a.name||""), "ja"));
-      } else { // date-desc
+      } else {
         arr.sort((a,b) => new Date(b.acquisitionDate).getTime() - new Date(a.acquisitionDate).getTime());
       }
       return arr;
     }
 
-    // ===== Rendering =====
     function render() {
       const list = getFilteredSorted();
 
-      // empty states
       emptyState.classList.toggle("hidden", prizes.length !== 0);
       noResults.classList.toggle("hidden", !(prizes.length > 0 && list.length === 0));
 
-      // toggle mode
       cardGrid.classList.toggle("hidden", displayMode !== "card");
       listWrap.classList.toggle("hidden", displayMode !== "list");
 
-      // clear
       cardGrid.innerHTML = "";
       listBody.innerHTML = "";
 
@@ -412,7 +389,6 @@
       minus.type = "button";
       minus.className = "w-7 h-7 rounded-full bg-slate-200 text-slate-800 flex items-center justify-center font-bold hover:bg-slate-300 transition-colors";
       minus.textContent = "-";
-      minus.setAttribute("aria-label", "減らす");
       minus.onclick = () => updateQuantity(prizeId, Math.max(0, quantity - 1));
 
       const num = document.createElement("span");
@@ -423,7 +399,6 @@
       plus.type = "button";
       plus.className = "w-7 h-7 rounded-full bg-slate-200 text-slate-800 flex items-center justify-center font-bold hover:bg-slate-300 transition-colors";
       plus.textContent = "+";
-      plus.setAttribute("aria-label", "増やす");
       plus.onclick = () => updateQuantity(prizeId, quantity + 1);
 
       wrap.appendChild(minus);
@@ -493,7 +468,6 @@
 
         const editBtn = document.createElement("button");
         editBtn.className = "p-2 text-slate-600 hover:text-blue-500 transition-colors";
-        editBtn.setAttribute("aria-label", "編集");
         editBtn.textContent = "✏️";
         editBtn.onclick = () => {
           const prize = prizes.find(x => x.id === p.id);
@@ -502,7 +476,6 @@
 
         const delBtn = document.createElement("button");
         delBtn.className = "p-2 text-slate-600 hover:text-red-500 transition-colors";
-        delBtn.setAttribute("aria-label", "削除");
         delBtn.textContent = "🗑️";
         delBtn.onclick = () => deletePrize(p.id);
 
@@ -554,7 +527,6 @@
         const editBtn = document.createElement("button");
         editBtn.className = "p-2 text-slate-500 hover:text-blue-500 transition-colors";
         editBtn.textContent = "✏️";
-        editBtn.setAttribute("aria-label", "編集");
         editBtn.onclick = () => {
           const prize = prizes.find(x => x.id === p.id);
           if (prize) openModal(prize);
@@ -563,7 +535,6 @@
         const delBtn = document.createElement("button");
         delBtn.className = "p-2 text-slate-500 hover:text-red-500 transition-colors";
         delBtn.textContent = "🗑️";
-        delBtn.setAttribute("aria-label", "削除");
         delBtn.onclick = () => deletePrize(p.id);
 
         ops.appendChild(editBtn);
@@ -581,7 +552,6 @@
       }
     }
 
-    // ===== Actions =====
     function upsertPrize(prize) {
       const idx = prizes.findIndex(p => p.id === prize.id);
       if (idx >= 0) prizes[idx] = prize;
@@ -602,9 +572,7 @@
       render();
     }
 
-    // ===== Events =====
     addBtn.addEventListener("click", () => openModal(null));
-
     searchInput.addEventListener("input", render);
     categorySelect.addEventListener("change", render);
     sortSelect.addEventListener("change", render);
@@ -652,10 +620,8 @@
       closeModal();
     });
 
-    // ===== Boot =====
     prizes = safeLoad();
     render();
   </script>
 </body>
 </html>
-
