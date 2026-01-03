@@ -8,15 +8,14 @@
 </head>
 
 <body class="bg-slate-100 text-slate-800">
+  <!-- Header -->
   <header class="bg-white shadow-md sticky top-0 z-10">
     <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
       <h1 class="text-3xl font-bold text-indigo-600 whitespace-nowrap">在庫管理</h1>
 
       <div class="w-full sm:w-auto flex flex-wrap items-center justify-center sm:justify-end gap-2">
         <div class="relative flex-grow sm:flex-grow-0 sm:w-64">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-            🔎
-          </span>
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔎</span>
           <input id="searchInput" type="text" placeholder="景品名で検索..."
                  class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm
                         placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -51,6 +50,7 @@
     </div>
   </header>
 
+  <!-- Main -->
   <main class="max-w-6xl mx-auto p-4 md:p-8">
     <div id="emptyState" class="text-center py-20 hidden">
       <p class="text-xl text-slate-500">まだ景品が登録されていません。</p>
@@ -61,26 +61,28 @@
       <p class="text-xl text-slate-500">検索条件に合う景品が見つかりませんでした。</p>
     </div>
 
+    <!-- Card -->
     <div id="cardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
 
+    <!-- List -->
     <div id="listWrap" class="bg-white rounded-lg shadow-lg overflow-x-auto hidden">
       <table class="w-full text-sm text-left text-slate-600">
         <thead class="text-xs text-slate-700 uppercase bg-slate-50">
-        <tr>
-          <th class="px-6 py-3 min-w-[200px]">景品名</th>
-          <th class="px-6 py-3">カテゴリ</th>
-          <th class="px-6 py-3 text-center">数量</th>
-          <th class="px-6 py-3">獲得日</th>
-          <th class="px-6 py-3">会社</th>
-          <th class="px-6 py-3 text-right">操作</th>
-        </tr>
+          <tr>
+            <th class="px-6 py-3 min-w-[200px]">景品名</th>
+            <th class="px-6 py-3">カテゴリ</th>
+            <th class="px-6 py-3 text-center">数量</th>
+            <th class="px-6 py-3">獲得日</th>
+            <th class="px-6 py-3">会社</th>
+            <th class="px-6 py-3 text-right">操作</th>
+          </tr>
         </thead>
         <tbody id="listBody"></tbody>
       </table>
     </div>
   </main>
 
-  <!-- +ボタン -->
+  <!-- Add button -->
   <button id="addBtn"
           class="fixed bottom-8 right-8 bg-indigo-600 text-white p-4 rounded-full shadow-lg
                  hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
@@ -89,15 +91,571 @@
     <span class="text-3xl leading-none">+</span>
   </button>
 
-  <!-- モーダル -->
+  <!-- Modal -->
   <div id="modalBackdrop" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
-    <div id="modalPanel" class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-      <h2 id="modalTitle" class="text-2xl font-bold mb-6">景品を追加</h2>
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 id="modalTitle" class="text-2xl font-bold">景品を追加</h2>
+        <button id="closeModalBtn" class="text-slate-500 hover:text-slate-800 text-2xl leading-none" aria-label="閉じる">×</button>
+      </div>
 
       <p id="formError" class="hidden bg-red-100 text-red-700 p-3 rounded-md mb-4"></p>
 
       <form id="prizeForm" class="space-y-4">
+        <input type="hidden" id="editId" />
+
         <div>
           <label class="block text-sm font-medium text-slate-700">景品名</label>
           <input id="nameInput" type="text" required
-                 class="mt-1 block w-full px-3 py-2 bg-white border border
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700">カテゴリ</label>
+          <select id="categoryInput"
+                  class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm
+                         focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="マスコット">マスコット</option>
+            <option value="ぬいぐるみ">ぬいぐるみ</option>
+            <option value="フィギュア">フィギュア</option>
+            <option value="その他" selected>その他</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700">製造会社</label>
+          <select id="manufacturerInput"
+                  class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm
+                         focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="指定なし" selected>指定なし</option>
+            <option value="バンダイナムコ">バンダイナムコ</option>
+            <option value="タイトー">タイトー</option>
+            <option value="SEGA FAVE">SEGA FAVE</option>
+            <option value="FuRyu">FuRyu</option>
+            <option value="Parade">Parade</option>
+            <option value="SK">SK</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700">数量</label>
+          <input id="quantityInput" type="number" min="0" value="1" required
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700">獲得日</label>
+          <input id="dateInput" type="date" required
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700">写真</label>
+          <input id="photoInput" type="file" accept="image/*"
+                 class="mt-1 block w-full text-sm text-slate-500
+                        file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
+                        file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700
+                        hover:file:bg-indigo-100" />
+          <img id="photoPreview" class="mt-3 rounded-md h-32 w-32 object-cover hidden" alt="Preview" />
+          <button id="clearPhotoBtn" type="button"
+                  class="mt-2 text-sm text-slate-500 hover:text-slate-800 hidden">
+            写真を削除
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700">メモ</label>
+          <textarea id="notesInput" rows="3"
+                    class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm
+                           focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button id="cancelBtn" type="button"
+                  class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">
+            キャンセル
+          </button>
+          <button type="submit"
+                  class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700
+                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ===== Storage =====
+    const STORAGE_KEY = "crane-game-prizes";
+
+    /** @type {Array<{
+     *  id:string,name:string,quantity:number,acquisitionDate:string,
+     *  category:string,manufacturer?:string,photo?:string,notes?:string
+     * }>} */
+    let prizes = [];
+
+    // ===== UI refs =====
+    const $ = (id) => document.getElementById(id);
+
+    const searchInput = $("searchInput");
+    const categorySelect = $("categorySelect");
+    const sortSelect = $("sortSelect");
+    const modeCardBtn = $("modeCardBtn");
+    const modeListBtn = $("modeListBtn");
+
+    const emptyState = $("emptyState");
+    const noResults = $("noResults");
+    const cardGrid = $("cardGrid");
+    const listWrap = $("listWrap");
+    const listBody = $("listBody");
+
+    const addBtn = $("addBtn");
+    const modalBackdrop = $("modalBackdrop");
+    const modalTitle = $("modalTitle");
+    const closeModalBtn = $("closeModalBtn");
+    const cancelBtn = $("cancelBtn");
+    const formError = $("formError");
+    const prizeForm = $("prizeForm");
+
+    const editId = $("editId");
+    const nameInput = $("nameInput");
+    const quantityInput = $("quantityInput");
+    const dateInput = $("dateInput");
+    const categoryInput = $("categoryInput");
+    const manufacturerInput = $("manufacturerInput");
+    const photoInput = $("photoInput");
+    const photoPreview = $("photoPreview");
+    const clearPhotoBtn = $("clearPhotoBtn");
+    const notesInput = $("notesInput");
+
+    let displayMode = "card"; // 'card' | 'list'
+    let currentPhotoData = ""; // base64
+
+    function todayISO() {
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function safeLoad() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        // migrate minimal
+        return parsed.map(p => ({
+          id: String(p.id ?? (new Date().toISOString() + Math.random())),
+          name: String(p.name ?? ""),
+          quantity: Number.isFinite(p.quantity) ? Number(p.quantity) : 1,
+          acquisitionDate: String(p.acquisitionDate ?? todayISO()),
+          category: String(p.category ?? "その他"),
+          manufacturer: p.manufacturer ? String(p.manufacturer) : "指定なし",
+          photo: p.photo ? String(p.photo) : "",
+          notes: p.notes ? String(p.notes) : ""
+        }));
+      } catch (e) {
+        console.error("load failed", e);
+        return [];
+      }
+    }
+
+    function safeSave() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(prizes));
+      } catch (e) {
+        console.error("save failed", e);
+      }
+    }
+
+    // ===== Modal =====
+    function openModal(prize) {
+      formError.classList.add("hidden");
+      formError.textContent = "";
+
+      modalBackdrop.classList.remove("hidden");
+      modalBackdrop.classList.add("flex");
+
+      if (prize) {
+        modalTitle.textContent = "景品を編集";
+        editId.value = prize.id;
+        nameInput.value = prize.name;
+        quantityInput.value = String(prize.quantity ?? 1);
+        dateInput.value = prize.acquisitionDate || todayISO();
+        categoryInput.value = prize.category || "その他";
+        manufacturerInput.value = prize.manufacturer || "指定なし";
+        notesInput.value = prize.notes || "";
+        currentPhotoData = prize.photo || "";
+      } else {
+        modalTitle.textContent = "景品を追加";
+        editId.value = "";
+        nameInput.value = "";
+        quantityInput.value = "1";
+        dateInput.value = todayISO();
+        categoryInput.value = "その他";
+        manufacturerInput.value = "指定なし";
+        notesInput.value = "";
+        currentPhotoData = "";
+      }
+
+      // preview
+      if (currentPhotoData) {
+        photoPreview.src = currentPhotoData;
+        photoPreview.classList.remove("hidden");
+        clearPhotoBtn.classList.remove("hidden");
+      } else {
+        photoPreview.src = "";
+        photoPreview.classList.add("hidden");
+        clearPhotoBtn.classList.add("hidden");
+      }
+
+      // file input reset
+      photoInput.value = "";
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.add("hidden");
+      modalBackdrop.classList.remove("flex");
+    }
+
+    function setError(msg) {
+      formError.textContent = msg;
+      formError.classList.remove("hidden");
+    }
+
+    // close on backdrop click
+    modalBackdrop.addEventListener("mousedown", (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+    closeModalBtn.addEventListener("click", closeModal);
+    cancelBtn.addEventListener("click", closeModal);
+
+    // ===== Photo handling =====
+    photoInput.addEventListener("change", () => {
+      const file = photoInput.files && photoInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        currentPhotoData = String(reader.result || "");
+        if (currentPhotoData) {
+          photoPreview.src = currentPhotoData;
+          photoPreview.classList.remove("hidden");
+          clearPhotoBtn.classList.remove("hidden");
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    clearPhotoBtn.addEventListener("click", () => {
+      currentPhotoData = "";
+      photoPreview.src = "";
+      photoPreview.classList.add("hidden");
+      clearPhotoBtn.classList.add("hidden");
+      photoInput.value = "";
+    });
+
+    // ===== Filtering/Sorting =====
+    function getFilteredSorted() {
+      const term = (searchInput.value || "").toLowerCase();
+      const cat = categorySelect.value;
+      const order = sortSelect.value;
+
+      let arr = prizes.filter(p => {
+        const nameMatch = (p.name || "").toLowerCase().includes(term);
+        const catMatch = (cat === "すべて") || (p.category === cat);
+        return nameMatch && catMatch;
+      });
+
+      if (order === "name-asc") {
+        arr.sort((a,b) => (a.name||"").localeCompare((b.name||""), "ja"));
+      } else if (order === "name-desc") {
+        arr.sort((a,b) => (b.name||"").localeCompare((a.name||""), "ja"));
+      } else { // date-desc
+        arr.sort((a,b) => new Date(b.acquisitionDate).getTime() - new Date(a.acquisitionDate).getTime());
+      }
+      return arr;
+    }
+
+    // ===== Rendering =====
+    function render() {
+      const list = getFilteredSorted();
+
+      // empty states
+      emptyState.classList.toggle("hidden", prizes.length !== 0);
+      noResults.classList.toggle("hidden", !(prizes.length > 0 && list.length === 0));
+
+      // toggle mode
+      cardGrid.classList.toggle("hidden", displayMode !== "card");
+      listWrap.classList.toggle("hidden", displayMode !== "list");
+
+      // clear
+      cardGrid.innerHTML = "";
+      listBody.innerHTML = "";
+
+      if (displayMode === "card") renderCards(list);
+      else renderList(list);
+    }
+
+    function qtyControl(prizeId, quantity) {
+      const wrap = document.createElement("div");
+      wrap.className = "flex items-center space-x-2";
+
+      const minus = document.createElement("button");
+      minus.type = "button";
+      minus.className = "w-7 h-7 rounded-full bg-slate-200 text-slate-800 flex items-center justify-center font-bold hover:bg-slate-300 transition-colors";
+      minus.textContent = "-";
+      minus.setAttribute("aria-label", "減らす");
+      minus.onclick = () => updateQuantity(prizeId, Math.max(0, quantity - 1));
+
+      const num = document.createElement("span");
+      num.className = "font-mono text-lg w-8 text-center";
+      num.textContent = String(quantity);
+
+      const plus = document.createElement("button");
+      plus.type = "button";
+      plus.className = "w-7 h-7 rounded-full bg-slate-200 text-slate-800 flex items-center justify-center font-bold hover:bg-slate-300 transition-colors";
+      plus.textContent = "+";
+      plus.setAttribute("aria-label", "増やす");
+      plus.onclick = () => updateQuantity(prizeId, quantity + 1);
+
+      wrap.appendChild(minus);
+      wrap.appendChild(num);
+      wrap.appendChild(plus);
+      return wrap;
+    }
+
+    function renderCards(list) {
+      for (const p of list) {
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out relative";
+
+        const top = document.createElement(p.photo ? "img" : "div");
+        if (p.photo) {
+          top.src = p.photo;
+          top.alt = p.name;
+          top.className = "w-full h-40 object-cover";
+        } else {
+          top.className = "w-full h-40 bg-slate-200 flex items-center justify-center text-slate-400 text-5xl";
+          top.textContent = "🖼️";
+        }
+
+        const badge = document.createElement("span");
+        badge.className = "absolute top-2 left-2 bg-indigo-500 text-white text-xs font-semibold px-2 py-1 rounded-full shadow";
+        badge.textContent = p.category || "その他";
+
+        const body = document.createElement("div");
+        body.className = "p-4";
+
+        const h3 = document.createElement("h3");
+        h3.className = "text-xl font-bold text-slate-800 mb-2 truncate";
+        h3.textContent = p.name;
+
+        const qtyRow = document.createElement("div");
+        qtyRow.className = "flex items-center justify-between text-slate-600 mb-2";
+        const qtyLabel = document.createElement("span");
+        qtyLabel.className = "font-semibold";
+        qtyLabel.textContent = "数量:";
+        qtyRow.appendChild(qtyLabel);
+        qtyRow.appendChild(qtyControl(p.id, p.quantity ?? 1));
+
+        const dateP = document.createElement("p");
+        dateP.className = "text-slate-600";
+        dateP.innerHTML = `<span class="font-semibold">獲得日:</span> ${p.acquisitionDate || "-"}`;
+
+        body.appendChild(h3);
+        body.appendChild(qtyRow);
+        body.appendChild(dateP);
+
+        if (p.manufacturer && p.manufacturer !== "指定なし") {
+          const m = document.createElement("p");
+          m.className = "text-slate-600 mt-1";
+          m.innerHTML = `<span class="font-semibold">会社:</span> ${p.manufacturer}`;
+          body.appendChild(m);
+        }
+
+        if (p.notes) {
+          const notes = document.createElement("p");
+          notes.className = "text-sm text-slate-500 mt-2 bg-slate-100 p-2 rounded whitespace-pre-wrap max-h-20 overflow-y-auto";
+          notes.textContent = p.notes;
+          body.appendChild(notes);
+        }
+
+        const footer = document.createElement("div");
+        footer.className = "p-4 bg-slate-50 flex justify-end space-x-2";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "p-2 text-slate-600 hover:text-blue-500 transition-colors";
+        editBtn.setAttribute("aria-label", "編集");
+        editBtn.textContent = "✏️";
+        editBtn.onclick = () => {
+          const prize = prizes.find(x => x.id === p.id);
+          if (prize) openModal(prize);
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "p-2 text-slate-600 hover:text-red-500 transition-colors";
+        delBtn.setAttribute("aria-label", "削除");
+        delBtn.textContent = "🗑️";
+        delBtn.onclick = () => deletePrize(p.id);
+
+        footer.appendChild(editBtn);
+        footer.appendChild(delBtn);
+
+        card.appendChild(top);
+        card.appendChild(badge);
+        card.appendChild(body);
+        card.appendChild(footer);
+
+        cardGrid.appendChild(card);
+      }
+    }
+
+    function renderList(list) {
+      for (const p of list) {
+        const tr = document.createElement("tr");
+        tr.className = "bg-white border-b hover:bg-slate-50 align-middle";
+
+        const nameTh = document.createElement("th");
+        nameTh.className = "px-6 py-4 font-medium text-slate-900 whitespace-nowrap";
+        nameTh.textContent = p.name;
+
+        const catTd = document.createElement("td");
+        catTd.className = "px-6 py-4";
+        catTd.textContent = p.category || "その他";
+
+        const qtyTd = document.createElement("td");
+        qtyTd.className = "px-6 py-4";
+        const qtyWrap = document.createElement("div");
+        qtyWrap.className = "flex items-center justify-center";
+        qtyWrap.appendChild(qtyControl(p.id, p.quantity ?? 1));
+        qtyTd.appendChild(qtyWrap);
+
+        const dateTd = document.createElement("td");
+        dateTd.className = "px-6 py-4 whitespace-nowrap";
+        dateTd.textContent = p.acquisitionDate || "-";
+
+        const manTd = document.createElement("td");
+        manTd.className = "px-6 py-4";
+        manTd.textContent = (p.manufacturer && p.manufacturer !== "指定なし") ? p.manufacturer : "-";
+
+        const opTd = document.createElement("td");
+        opTd.className = "px-6 py-4";
+        const ops = document.createElement("div");
+        ops.className = "flex justify-end space-x-2";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "p-2 text-slate-500 hover:text-blue-500 transition-colors";
+        editBtn.textContent = "✏️";
+        editBtn.setAttribute("aria-label", "編集");
+        editBtn.onclick = () => {
+          const prize = prizes.find(x => x.id === p.id);
+          if (prize) openModal(prize);
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "p-2 text-slate-500 hover:text-red-500 transition-colors";
+        delBtn.textContent = "🗑️";
+        delBtn.setAttribute("aria-label", "削除");
+        delBtn.onclick = () => deletePrize(p.id);
+
+        ops.appendChild(editBtn);
+        ops.appendChild(delBtn);
+        opTd.appendChild(ops);
+
+        tr.appendChild(nameTh);
+        tr.appendChild(catTd);
+        tr.appendChild(qtyTd);
+        tr.appendChild(dateTd);
+        tr.appendChild(manTd);
+        tr.appendChild(opTd);
+
+        listBody.appendChild(tr);
+      }
+    }
+
+    // ===== Actions =====
+    function upsertPrize(prize) {
+      const idx = prizes.findIndex(p => p.id === prize.id);
+      if (idx >= 0) prizes[idx] = prize;
+      else prizes.push(prize);
+      safeSave();
+      render();
+    }
+
+    function deletePrize(id) {
+      prizes = prizes.filter(p => p.id !== id);
+      safeSave();
+      render();
+    }
+
+    function updateQuantity(id, newQty) {
+      prizes = prizes.map(p => p.id === id ? { ...p, quantity: newQty } : p);
+      safeSave();
+      render();
+    }
+
+    // ===== Events =====
+    addBtn.addEventListener("click", () => openModal(null));
+
+    searchInput.addEventListener("input", render);
+    categorySelect.addEventListener("change", render);
+    sortSelect.addEventListener("change", render);
+
+    modeCardBtn.addEventListener("click", () => {
+      displayMode = "card";
+      modeCardBtn.className = "p-1.5 rounded-md bg-white shadow";
+      modeListBtn.className = "p-1.5 rounded-md text-slate-600";
+      render();
+    });
+
+    modeListBtn.addEventListener("click", () => {
+      displayMode = "list";
+      modeListBtn.className = "p-1.5 rounded-md bg-white shadow";
+      modeCardBtn.className = "p-1.5 rounded-md text-slate-600";
+      render();
+    });
+
+    prizeForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      formError.classList.add("hidden");
+      formError.textContent = "";
+
+      const name = (nameInput.value || "").trim();
+      const date = (dateInput.value || "").trim();
+
+      if (!name || !date) {
+        setError("景品名と獲得日は必須です。");
+        return;
+      }
+
+      const id = editId.value || (new Date().toISOString() + Math.random());
+      const prize = {
+        id,
+        name,
+        quantity: Number(quantityInput.value || 0),
+        acquisitionDate: date,
+        category: categoryInput.value || "その他",
+        manufacturer: manufacturerInput.value || "指定なし",
+        photo: currentPhotoData || "",
+        notes: (notesInput.value || "").trim()
+      };
+
+      upsertPrize(prize);
+      closeModal();
+    });
+
+    // ===== Boot =====
+    prizes = safeLoad();
+    render();
+  </script>
+</body>
+</html>
+
